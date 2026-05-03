@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pike & Squat — Mobility Protocol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --bg-raised: #111114;
+    --surface: #15151a;
+    --border: #1f1f26;
+    --border-bright: #2a2a33;
+    --text: #e8e6e0;
+    --text-muted: #85827a;
+    --text-dim: #56544e;
+    --accent: #d4a85a;
+    --accent-dim: #8a6f3a;
+    --rule: rgba(212, 168, 90, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(212, 168, 90, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 100%, rgba(212, 168, 90, 0.03) 0%, transparent 40%);
+    min-height: 100vh;
+  }
+
+  /* grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 64px 32px 96px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 24px;
+  }
+
+  .meta-row span:nth-child(2) { color: var(--accent); }
+
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    font-size: clamp(48px, 7vw, 76px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  h1 em {
+    color: var(--accent);
+    font-size: 0.9em;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    max-width: 60ch;
+    line-height: 1.7;
+  }
+
+  /* Nav */
+  nav {
+    display: flex;
+    gap: 0;
+    margin: 40px 0 56px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  nav a {
+    flex: 1;
+    padding: 16px 20px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    text-align: center;
+    transition: all 0.2s ease;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  nav a:last-child { border-right: none; }
+  nav a:hover {
+    color: var(--accent);
+    background: var(--bg-raised);
+  }
+  nav a::before {
+    content: '→ ';
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  nav a:hover::before { opacity: 1; }
+
+  /* Session header */
+  .session {
+    margin-bottom: 80px;
+    scroll-margin-top: 32px;
+  }
+
+  .session-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    align-items: end;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .session-tag {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border: 1px solid var(--accent-dim);
+    border-radius: 2px;
+    background: rgba(212, 168, 90, 0.05);
+    align-self: end;
+    height: fit-content;
+  }
+
+  .session-title {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 44px;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .session-target {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  /* Exercise card */
+  .exercise {
+    margin-bottom: 48px;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 24px;
+  }
+
+  .ex-num {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--text-dim);
+    font-weight: 400;
+    padding-top: 4px;
+  }
+
+  .ex-content { min-width: 0; }
+
+  .ex-name {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  .ex-prescription {
+    font-size: 12px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+  }
+
+  .ex-cue {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 20px;
+    padding-left: 16px;
+    border-left: 1px solid var(--border-bright);
+  }
+
+  .ex-cue strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .video-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  /* Schedule */
+  .schedule {
+    margin-top: 96px;
+    padding: 40px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: var(--surface);
+    position: relative;
+  }
+
+  .schedule::before {
+    content: '// SCHEDULING';
+    position: absolute;
+    top: -10px;
+    left: 24px;
+    font-size: 10px;
+    color: var(--accent);
+    background: var(--bg);
+    padding: 0 12px;
+    letter-spacing: 0.2em;
+  }
+
+  .schedule h3 {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 28px;
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin: 24px 0;
+  }
+
+  .day {
+    aspect-ratio: 1;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    border-radius: 2px;
+    padding: 8px;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .day strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+
+  .day.flex {
+    border-color: var(--accent);
+    background: rgba(212, 168, 90, 0.08);
+    color: var(--accent);
+  }
+  .day.flex strong { color: var(--accent); }
+
+  .day.strength {
+    border-color: var(--border-bright);
+    background: var(--bg-raised);
+    color: var(--text-muted);
+  }
+  .day.strength strong { color: var(--text); }
+
+  .schedule-notes {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-top: 20px;
+  }
+
+  .schedule-notes p { margin-bottom: 8px; }
+  .schedule-notes .key {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .container { padding: 32px 20px 64px; }
+    .session-header { grid-template-columns: 1fr; gap: 12px; }
+    .exercise { grid-template-columns: 40px 1fr; gap: 16px; }
+    .ex-num { font-size: 40px; }
+    .ex-name { font-size: 18px; }
+    nav { flex-direction: column; }
+    nav a { border-right: none; border-bottom: 1px solid var(--border); }
+    nav a:last-child { border-bottom: none; }
+    .week-grid { grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .day { font-size: 8px; padding: 4px; }
+    .day strong { font-size: 11px; }
+    .schedule { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="meta-row">
+      <span>Mobility Protocol — v.01</span>
+      <span>STATUS: ACTIVE</span>
+    </div>
+    <h1>Pike <em>&amp;</em> Squat</h1>
+    <p class="subtitle">Two skill-focused sessions targeting hamstrings, calves, ankles, hips, and adductors. Three to five stretches each, stretch-stacked, run one to two times per week.</p>
+    <nav>
+      <a href="#session-a">A · Pike</a>
+      <a href="#session-b">B · Squat</a>
+      <a href="#schedule">Schedule</a>
+    </nav>
+  </header>
+
+  <!-- SESSION A -->
+  <section class="session" id="session-a">
+    <div class="session-header">
+      <div class="session-tag">Session A</div>
+      <h2 class="session-title">Pike</h2>
+      <div class="session-target">Targets — hamstrings, gastrocnemius, sciatic nerve, posterior chain</div>
+    </div>
+
+    <div class="exercise">
+      <div class="ex-num">01</div>
+      <div class="ex-content">
+        <div class="ex-name">Sciatic Nerve Floss</div>
+        <div class="ex-prescription">2 × 10 reps per leg</div>
+        <div class="ex-cue">Clears nerve tension before stretching, so the hamstring work later actually goes deeper. Nerves slide rather than stretch — never push into pain.</div>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/OMbKv94Bu_U" title="Exercise demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="ex-num">02</div>
+      <div class="ex-content">
+        <div class="ex-name">Supine Hamstring Stretch — Strap</div>
+        <div class="ex-prescription">3 × 30s per side</div>
+        <div class="ex-cue"><strong>Dorsiflex the foot hard</strong> to include the gastroc. Keep the non-working leg flat on the floor — bending it tilts the pelvis and cheats the stretch.</div>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/Il1L75v6gq0" title="Exercise demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="ex-num">03</div>
+      <div class="ex-content">
+        <div class="ex-name">Straight-Knee Wall Calf Stretch</div>
+        <div class="ex-prescription">3 × 30s per side</div>
+        <div class="ex-cue">Gastroc crosses the knee and limits pike depth — opens the next exercise. Keep the back knee locked and the heel pinned to the floor.</div>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/EFnLllHNbQQ" title="Exercise demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="ex-num">04</div>
+      <div class="ex-content">
+        <div class="ex-name">Seated Pike Compression — Isometric Reps</div>
+        <div class="ex-prescription">3 × 6 reps · ~4s hold</div>
+        <div class="ex-cue">Resisted training in the new range. Hands on shins or feet, <strong>actively pull yourself down</strong>. For loaded version: heavy plate or DB across thighs, push legs up into it for 5s × 6.</div>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/yQXnOuQqKYc" title="Exercise demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="ex-num">05</div>
+      <div class="ex-content">
+        <div class="ex-name">Jefferson Curl</div>
+        <div class="ex-prescription">3 × 5 slow reps · 5–10 kg</div>
+        <div class="ex-cue">Loaded flexion through full range. Roll down vertebra by vertebra, chin to chest first. <strong>Start unloaded for 1–2 sessions</strong> to learn the segmental movement before adding weight.</div>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/BGQ-1Uptah8" title="Exercise demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SESSION B -->
+  <section class="session" id="session-b">
+    <div class="session-header">
+      <div class="session-tag">Session B</div>
+      <h2 class="session-title">Deep Squat</h2>
+      <div class="session-target">Targets — ankle dorsiflexion, hip rotation, adductors</div>
+    </div>
+
+    <div class="exercise">
+      <div class="ex-num">01</div>
+      <div class="ex-content">
+        <div class="ex-name">Knee-to-Wall Ankle Mob</div>
+        <div class="ex-prescription">2 × 10 reps per side</div>
+        <div class="ex-cue">Drive the knee past the toes, rebuild dorsiflexion. <strong>Heel stays down</strong> — don't let it lift to chase depth. Track knee straight over middle toe.</div>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/ElrpduJn92Y" title="Exercise demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="ex-num">02</div>
+      <div class="ex-content">
+        <div class="ex-name">Frog Stretch</div>
+        <div class="ex-prescription">3 × 45s · rock gently</div>
+        <div class="ex-cue">Adductors and internal hip rotation. Knees wide, feet flexed, shins parallel. Rock back and forth to find depth — don't force a static end-range hold.</div>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/mO8S7qOdcdU" title="Exercise demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="ex-num">03</div>
+      <div class="ex-content">
+        <div class="ex-name">90/90 Hip Switches</div>
+        <div class="ex-prescription">3 × 6 reps per side · pause at end range</div>
+        <div class="ex-cue">External and internal hip rotation. Sit tall — don't collapse the back hip. Lean forward over the front shin to deepen, lean back to load the trail leg.</div>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/ED8NnqRIK-Q" title="Exercise demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="ex-num">04</div>
+      <div class="ex-content">
+        <div class="ex-name">Deep Goblet Squat Hold</div>
+        <div class="ex-prescription">3 × 30s</div>
+        <div class="ex-cue">Integrates the position. <strong>Elbows pressing knees out</strong>, weight through whole foot, chest tall. Use a moderate weight — enough to anchor you down without crushing posture.</div>
+        <div class="video-wrap">
+          <iframe src="https://www.youtube.com/embed/0fE9xhq_4gk" title="Exercise demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="ex-num">05</div>
+      <div class="ex-content">
+        <div class="ex-name">Tempo Goblet Squat — 3s Pause</div>
+        <div class="ex-prescription">3 × 6 reps · 3s bottom pause</div>
+        <div class="ex-cue">Strengthens the range. Same setup as the hold — descend controlled, pause 3s at the bottom, drive up. No video needed: it's the hold above with reps stacked on either side.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCHEDULE -->
+  <section class="schedule" id="schedule">
+    <h3>Weekly Layout</h3>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Mobility is fatiguing — same mechanism as strength training. Schedule it like real work, not active recovery.</p>
+
+    <div class="week-grid">
+      <div class="day strength"><strong>Mon</strong>Strength</div>
+      <div class="day"><strong>Tue</strong>—</div>
+      <div class="day flex"><strong>Wed</strong>Mob PM</div>
+      <div class="day"><strong>Thu</strong>—</div>
+      <div class="day strength"><strong>Fri</strong>Strength</div>
+      <div class="day"><strong>Sat</strong>—</div>
+      <div class="day flex"><strong>Sun</strong>Mob</div>
+    </div>
+
+    <div class="schedule-notes">
+      <p><span class="key">SUN —</span> 2 days post-Friday strength. Best window. Run Session A or B fresh.</p>
+      <p><span class="key">WED PM —</span> Same day as strength, hours apart. Second-best window. Brain fatigue hasn't fully landed.</p>
+      <p><span class="key">AVOID —</span> Tue, Thu, Sat. Day-after strength = aphereent fatigue signals limit your stretch tolerance.</p>
+      <p style="margin-top: 16px; color: var(--text-dim);">If running once weekly, prioritise Sunday and alternate A / B each week.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Stretch right · stretch once</span>
+    <span>v.01</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
